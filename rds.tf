@@ -2,7 +2,7 @@ resource "random_password" "password" {
   length = 20
 }
 
-resource "aws_rds_cluster" "cluster" {
+resource "aws_rds_cluster" "default" {
   engine             = "aurora-postgresql"
   engine_mode        = "provisioned"
   engine_version     = "14.5"
@@ -16,14 +16,7 @@ resource "aws_rds_cluster" "cluster" {
 }
 
 resource "aws_rds_cluster_instance" "instance" {
-  cluster_identifier = aws_rds_cluster.cluster.id
+  cluster_identifier = aws_rds_cluster.default.id
   engine             = "aurora-postgresql"
   instance_class     = "db.t3.medium"
-}
-
-resource "aws_elasticache_cluster" "default" {
-  cluster_id      = "paperless"
-  engine          = "redis"
-  node_type       = "cache.t3.small"
-  num_cache_nodes = 1
 }

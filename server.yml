@@ -1,0 +1,9 @@
+#cloud-config
+runcmd:
+  - sudo yum update -y
+  - sudo amazon-linux-extras install docker
+  - sudo service docker start
+  - sudo systemctl enable docker
+  - sudo usermod -a -G docker ec2-user
+  - docker pull linuxserver/paperless-ng:${paperless_image_tag}
+  - docker run -e PAPERLESS_REDIS=${paperless_redis} -e PAPERLESS_DBHOST=${paperless_dbhost} --name paperless linuxserver/paperless-ng
