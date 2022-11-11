@@ -1,4 +1,6 @@
-resource "aws_security_group" "default" {
+resource "aws_security_group" "web" {
+  name_prefix = "paperless-ng-web-"
+
   ingress {
     from_port   = 80
     to_port     = 80
@@ -19,6 +21,10 @@ resource "aws_security_group" "default" {
     to_port     = 0
     protocol    = -1
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
@@ -51,7 +57,7 @@ resource "aws_instance" "default" {
   instance_type = "t3.micro"
   ami           = data.aws_ami.amazon_linux.id
 
-  vpc_security_group_ids = [aws_security_group.default.id]
+  vpc_security_group_ids = [aws_security_group.web.id]
   user_data              = data.cloudinit_config.server_config.rendered
   key_name               = "ryan"
 }
