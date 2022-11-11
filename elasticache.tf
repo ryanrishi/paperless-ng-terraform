@@ -1,6 +1,5 @@
 resource "aws_security_group" "elasticache" {
   name_prefix = "paperless-ng-to-elasticache-"
-  # vpc_id      = data.aws_vpc.default.id
 
   ingress {
     description = "Allow paperless-ng instances to access ElastiCache"
@@ -17,14 +16,8 @@ resource "aws_security_group" "elasticache" {
   }
 }
 
-# resource "aws_elasticache_subnet_group" "default" {
-#   name       = "paperless-elasticache-subnet-group"
-#   subnet_ids = [aws_subnet.subnet.id]
-# }
-
 resource "aws_elasticache_cluster" "default" {
-  cluster_id = "paperless"
-  # subnet_group_name = aws_elasticache_subnet_group.default.name
+  cluster_id      = "paperless"
   engine          = "redis"
   node_type       = "cache.t3.small"
   num_cache_nodes = 1

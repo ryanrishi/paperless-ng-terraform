@@ -13,7 +13,6 @@ locals {
 
 resource "aws_security_group" "web" {
   name_prefix = "paperless-ng-web-"
-  # vpc_id      = data.aws_vpc.default.id
 
   ingress {
     from_port   = 8000
@@ -72,11 +71,6 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-# resource "aws_subnet" "subnet" {
-#   vpc_id     = data.aws_vpc.default.id
-#   cidr_block = "10.0.0.0/24"
-# }
-
 resource "aws_instance" "web" {
   instance_type = "t3.micro"
   ami           = data.aws_ami.amazon_linux.id
@@ -84,32 +78,12 @@ resource "aws_instance" "web" {
   vpc_security_group_ids = [aws_security_group.web.id]
   user_data              = data.cloudinit_config.server_config.rendered
   key_name               = "ryan"
-
-  # subnet_id = aws_subnet.subnet.id
 }
 
 resource "aws_eip" "elastic_ip" {
   instance = aws_instance.web.id
   vpc      = true
 }
-
-# resource "aws_internet_gateway" "internet_gateway" {
-#   vpc_id = data.aws_vpc.default.id
-# }
-
-# resource "aws_route_table" "route_table" {
-#   vpc_id = data.aws_vpc.default.id
-
-#   route {
-#     cidr_block = "0.0.0.0/0"
-#     gateway_id = aws_internet_gateway.internet_gateway.id
-#   }
-# }
-
-# resource "aws_route_table_association" "subnet_association" {
-#   subnet_id      = aws_subnet.subnet.id
-#   route_table_id = aws_route_table.route_table.id
-# }
 
 output "public_dns" {
   value = aws_eip.elastic_ip.public_dns

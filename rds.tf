@@ -5,7 +5,6 @@ resource "random_password" "db_password" {
 
 resource "aws_security_group" "rds" {
   name_prefix = "paperless-ng-to-rds-"
-  # vpc_id      = data.aws_vpc.default.id
 
   ingress {
     description = "Allow paperless-ng instances to access the database"
@@ -22,13 +21,6 @@ resource "aws_security_group" "rds" {
   }
 }
 
-# resource "aws_db_subnet_group" "default" {
-#   name_prefix = "paperless-"
-#   subnet_ids = [
-#     aws_subnet.subnet.id
-#   ]
-# }
-
 resource "aws_rds_cluster" "default" {
   engine                    = "aurora-postgresql"
   engine_mode               = "provisioned"
@@ -44,8 +36,6 @@ resource "aws_rds_cluster" "default" {
   vpc_security_group_ids = [
     aws_security_group.rds.id
   ]
-
-  # db_subnet_group_name = aws_db_subnet_group.default.name
 
   lifecycle {
     create_before_destroy = true
