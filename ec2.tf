@@ -2,12 +2,22 @@ resource "random_password" "paperless_secret_key" {
   length = 256
 }
 
+resource "random_password" "paperless_admin_password" {
+  count  = var.paperless_admin_password == null ? 1 : 0
+  length = 32
+}
+
+locals {
+  paperless_admin_password = coalesce(var.paperless_admin_password, one(random_password.paperless_admin_password[*].result))
+}
+
 resource "aws_security_group" "web" {
   name_prefix = "paperless-ng-web-"
+  # vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    from_port   = 80
-    to_port     = 80
+    from_port   = 8000
+    to_port     = 8000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -38,12 +48,14 @@ data "cloudinit_config" "server_config" {
   part {
     content_type = "text/cloud-config"
     content = templatefile("${path.module}/server.yml", {
-      paperless_redis      = "redis://${one(aws_elasticache_cluster.default.cache_nodes).address}:6379/paperless"
-      paperless_dbhost     = aws_rds_cluster.default.endpoint
-      paperless_dbuser     = aws_rds_cluster.default.master_username
-      paperless_dbpassword = aws_rds_cluster.default.master_password
-      paperless_secret_key = random_password.paperless_secret_key.result
-      paperless_image_tag  = var.paperless_image_tag
+      paperless_redis          = "redis://${one(aws_elasticache_cluster.default.cache_nodes).address}:6379/paperless"
+      paperless_dbhost         = aws_rds_cluster.default.endpoint
+      paperless_dbuser         = aws_rds_cluster.default.master_username
+      paperless_dbpassword     = aws_rds_cluster.default.master_password
+      paperless_secret_key     = random_password.paperless_secret_key.result
+      paperless_image_tag      = var.paperless_image_tag
+      paperless_admin_user     = var.paperless_admin_user
+      paperless_admin_password = local.paperless_admin_password
     })
   }
 }
@@ -60,15 +72,50 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-resource "aws_instance" "default" {
+# resource "aws_subnet" "subnet" {
+#   vpc_id     = data.aws_vpc.default.id
+#   cidr_block = "10.0.0.0/24"
+# }
+
+resource "aws_instance" "web" {
   instance_type = "t3.micro"
   ami           = data.aws_ami.amazon_linux.id
 
   vpc_security_group_ids = [aws_security_group.web.id]
   user_data              = data.cloudinit_config.server_config.rendered
   key_name               = "ryan"
+
+  # subnet_id = aws_subnet.subnet.id
 }
 
-output "ec2_public_hostname" {
-  value = aws_instance.default.public_dns
+resource "aws_eip" "elastic_ip" {
+  instance = aws_instance.web.id
+  vpc      = true
+}
+
+# resource "aws_internet_gateway" "internet_gateway" {
+#   vpc_id = data.aws_vpc.default.id
+# }
+
+# resource "aws_route_table" "route_table" {
+#   vpc_id = data.aws_vpc.default.id
+
+#   route {
+#     cidr_block = "0.0.0.0/0"
+#     gateway_id = aws_internet_gateway.internet_gateway.id
+#   }
+# }
+
+# resource "aws_route_table_association" "subnet_association" {
+#   subnet_id      = aws_subnet.subnet.id
+#   route_table_id = aws_route_table.route_table.id
+# }
+
+output "public_dns" {
+  value = aws_eip.elastic_ip.public_dns
+}
+
+output "paperless_admin_password" {
+  value     = local.paperless_admin_password
+  sensitive = true
 }
