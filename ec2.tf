@@ -1,3 +1,7 @@
+resource "random_password" "paperless_secret_key" {
+  length = 256
+}
+
 resource "aws_security_group" "web" {
   name_prefix = "paperless-ng-web-"
 
@@ -34,9 +38,12 @@ data "cloudinit_config" "server_config" {
   part {
     content_type = "text/cloud-config"
     content = templatefile("${path.module}/server.yml", {
-      paperless_redis     = one(aws_elasticache_cluster.default.cache_nodes).address
-      paperless_dbhost    = aws_rds_cluster.default.endpoint
-      paperless_image_tag = var.paperless_image_tag
+      paperless_redis      = "redis://${one(aws_elasticache_cluster.default.cache_nodes).address}:6379/paperless"
+      paperless_dbhost     = aws_rds_cluster.default.endpoint
+      paperless_dbuser     = aws_rds_cluster.default.master_username
+      paperless_dbpassword = aws_rds_cluster.default.master_password
+      paperless_secret_key = random_password.paperless_secret_key.result
+      paperless_image_tag  = var.paperless_image_tag
     })
   }
 }

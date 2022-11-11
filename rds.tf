@@ -1,5 +1,6 @@
-resource "random_password" "password" {
-  length = 20
+resource "random_password" "db_password" {
+  length  = 20
+  special = false # Only printable ASCII characters besides '/', '@', '"', ' ' may be used.
 }
 
 resource "aws_security_group" "rds" {
@@ -26,8 +27,8 @@ resource "aws_rds_cluster" "default" {
   engine_version     = "14.5"
   database_name      = "paperless"
   cluster_identifier = "paperless"
-  master_username    = "postgres"
-  master_password    = random_password.password.result
+  master_username    = "paperless"
+  master_password    = random_password.db_password.result
 
   backup_retention_period = 7
   skip_final_snapshot     = true
