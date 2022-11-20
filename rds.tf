@@ -37,6 +37,11 @@ resource "aws_rds_cluster" "default" {
     aws_security_group.rds.id
   ]
 
+  serverlessv2_scaling_configuration {
+    min_capacity = 2
+    max_capacity = 10
+  }
+
   lifecycle {
     create_before_destroy = true
   }
@@ -45,5 +50,5 @@ resource "aws_rds_cluster" "default" {
 resource "aws_rds_cluster_instance" "instance" {
   cluster_identifier = aws_rds_cluster.default.id
   engine             = "aurora-postgresql"
-  instance_class     = "db.t3.medium"
+  instance_class     = "db.serverless"
 }
