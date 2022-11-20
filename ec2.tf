@@ -47,7 +47,7 @@ data "cloudinit_config" "server_config" {
   part {
     content_type = "text/cloud-config"
     content = templatefile("${path.module}/server.yml", {
-      paperless_redis          = "redis://${one(aws_elasticache_cluster.default.cache_nodes).address}:6379/paperless"
+      paperless_redis          = "redis://${one(aws_elasticache_cluster.default.cache_nodes).address}:6379/0"
       paperless_dbhost         = aws_rds_cluster.default.endpoint
       paperless_dbuser         = aws_rds_cluster.default.master_username
       paperless_dbpassword     = aws_rds_cluster.default.master_password
