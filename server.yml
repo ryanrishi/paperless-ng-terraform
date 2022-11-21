@@ -1,4 +1,10 @@
 #cloud-config
+bootcmd:
+  # create ext4 filesystem on EBS if it doesn't exist
+  - test $(file -s /dev/nvme1n1 | awk '{print $2}') = "data" && test -z "$(blkid /dev/nvme1n1)" && mkfs.ext4 /dev/nvme1n1
+  - mkdir -p /opt/paperless
+mounts:
+  - ["/dev/nvme1n1", "/opt/paperless", "ext4"]
 runcmd:
   - sudo yum update -y
   - sudo amazon-linux-extras install docker

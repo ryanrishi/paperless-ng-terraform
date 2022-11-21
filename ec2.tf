@@ -80,6 +80,19 @@ resource "aws_instance" "web" {
   key_name               = "ryan"
 }
 
+resource "aws_ebs_volume" "default" {
+  size              = 20
+  availability_zone = aws_instance.web.availability_zone
+  encrypted         = true
+  # TODO KMS
+}
+
+resource "aws_volume_attachment" "default" {
+  device_name = "/dev/xvdb"
+  instance_id = aws_instance.web.id
+  volume_id   = aws_ebs_volume.default.id
+}
+
 resource "aws_eip" "elastic_ip" {
   instance = aws_instance.web.id
   vpc      = true
