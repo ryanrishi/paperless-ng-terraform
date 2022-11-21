@@ -14,5 +14,4 @@ runcmd:
   - sudo systemctl enable docker
   - sudo usermod -a -G docker ec2-user
   - docker pull jonaswinkler/paperless-ng:${paperless_image_tag}
-  - docker run -e PAPERLESS_REDIS=${paperless_redis} -e PAPERLESS_DBHOST=${paperless_dbhost} -e PAPERLESS_DBUSER=${paperless_dbuser} -e PAPERLESS_DBPASS=${paperless_dbpassword} -e PAPERLESS_SECRET_KEY="${paperless_secret_key}" -e PAPERLESS_ADMIN_USER=${paperless_admin_user} -e PAPERLESS_ADMIN_PASSWORD="${paperless_admin_password}" -p 8000:8000 --name paperless jonaswinkler/paperless-ng
-  # - docker exec -it paperless
+  - docker run -e PAPERLESS_REDIS=${paperless_redis} -e PAPERLESS_DBHOST=${paperless_dbhost} -e PAPERLESS_DBUSER=${paperless_dbuser} -e PAPERLESS_DBPASS=${paperless_dbpassword} -e PAPERLESS_SECRET_KEY="${paperless_secret_key}" -e PAPERLESS_ADMIN_USER=${paperless_admin_user} -e PAPERLESS_ADMIN_PASSWORD="${paperless_admin_password}" -v /opt/paperless/media:/usr/src/paperless/media -p 8000:8000 --name paperless jonaswinkler/paperless-ng
