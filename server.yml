@@ -1,7 +1,7 @@
 #cloud-config
 bootcmd:
   # wait for EBS to mount
-  - while true; do lsblk /dev/nvme1n1; if [ $? -eq 0 ]; then echo "Found /dev/nvme1n1"; break; fi; echo "Waiting for /dev/nvme1n1 to exist"; sleep 2; done
+  - while [ ! -e /dev/nvme1n1 ]; do echo "Waiting for /dev/nvme1n1 to exist"; sleep 2; done; echo "Found /dev/nvme1n1"
   # create ext4 filesystem on EBS if it doesn't exist
   - test $(file -s /dev/nvme1n1 | awk '{print $2}') = "data" && test -z "$(blkid /dev/nvme1n1)" && mkfs.ext4 /dev/nvme1n1
   - mkdir -p /opt/paperless
