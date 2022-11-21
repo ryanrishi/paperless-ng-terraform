@@ -78,12 +78,11 @@ resource "aws_instance" "web" {
   vpc_security_group_ids = [aws_security_group.web.id]
   user_data              = data.cloudinit_config.server_config.rendered
   key_name               = "ryan"
-  availability_zone      = aws_ebs_volume.default.availability_zone
 }
 
 resource "aws_ebs_volume" "default" {
   size              = 20
-  availability_zone = var.availability_zone
+  availability_zone = aws_instance.web.availability_zone
   encrypted         = true
   # TODO KMS
 }
