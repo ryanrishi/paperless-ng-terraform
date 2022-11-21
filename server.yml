@@ -1,10 +1,12 @@
 #cloud-config
 bootcmd:
+  # wait for EBS to mount
+  - while true; do lsblk /dev/nvme1n1; if [ $? -eq 0 ]; then echo "Found /dev/nvme1n1"; break; fi; echo "Waiting for /dev/nvme1n1 to exist"; sleep 2; done
   # create ext4 filesystem on EBS if it doesn't exist
   - test $(file -s /dev/nvme1n1 | awk '{print $2}') = "data" && test -z "$(blkid /dev/nvme1n1)" && mkfs.ext4 /dev/nvme1n1
   - mkdir -p /opt/paperless
 mounts:
-  - ["/dev/nvme1n1", "/opt/paperless", "ext4"]
+  - [/dev/nvme1n1, /opt/paperless, "ext4", "defaults,nofail", "0", "2"]
 runcmd:
   - sudo yum update -y
   - sudo amazon-linux-extras install docker
@@ -13,4 +15,4 @@ runcmd:
   - sudo usermod -a -G docker ec2-user
   - docker pull jonaswinkler/paperless-ng:${paperless_image_tag}
   - docker run -e PAPERLESS_REDIS=${paperless_redis} -e PAPERLESS_DBHOST=${paperless_dbhost} -e PAPERLESS_DBUSER=${paperless_dbuser} -e PAPERLESS_DBPASS=${paperless_dbpassword} -e PAPERLESS_SECRET_KEY="${paperless_secret_key}" -e PAPERLESS_ADMIN_USER=${paperless_admin_user} -e PAPERLESS_ADMIN_PASSWORD="${paperless_admin_password}" -p 8000:8000 --name paperless jonaswinkler/paperless-ng
-  - docker exec -it paperless
+  # - docker exec -it paperless
